@@ -1,6 +1,6 @@
 name: easy_admob_ads_flutter
 description: A simple and flexible Flutter package to integrate AdMob ad formats with minimal setup.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/huzaibsayyed/easy_admob_ads_flutter
 repository: https://github.com/huzaibsayyed/easy_admob_ads_flutter
 issue_tracker: https://github.com/huzaibsayyed/easy_admob_ads_flutter/issues
