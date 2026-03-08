@@ -28,8 +28,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_mobile_ads: ^6.0.0
-  shared_preferences: ^2.5.3
+  google_mobile_ads: ^7.0.0
+  shared_preferences: ^2.5.4
   logging: ^1.3.0
 
 dev_dependencies:

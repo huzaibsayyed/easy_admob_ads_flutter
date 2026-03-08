@@ -44,3 +44,7 @@
 ## 1.0.1
 
 * Removed the loading spinner for both banner and native ads
+
+## 1.0.2
+
+* dependencies updated: google_mobile_ads and shared_preferences
