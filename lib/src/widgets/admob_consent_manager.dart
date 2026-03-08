@@ -30,7 +30,10 @@ class ConsentManager {
     ConsentDebugSettings? debugSettings;
 
     if (AdHelper.showConstentGDPR && kDebugMode) {
-      debugSettings = ConsentDebugSettings(debugGeography: DebugGeography.debugGeographyEea);
+      debugSettings = ConsentDebugSettings(
+        debugGeography: DebugGeography.debugGeographyEea,
+        testIdentifiers: AdHelper.testDeviceIds,
+      );
     }
     ConsentRequestParameters params = ConsentRequestParameters(consentDebugSettings: debugSettings);
 
