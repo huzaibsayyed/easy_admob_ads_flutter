@@ -39,7 +39,7 @@ class _AdmobBannerAdState extends State<AdmobBannerAd> {
   Future<void> _loadBannerAd() async {
     if (_bannerAd != null || _isAdLoaded) return;
 
-    final adSize = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
+    final adSize = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
 
     if (adSize == null) {
       _logger.warning('⚠️ Adaptive ad size not available.');
