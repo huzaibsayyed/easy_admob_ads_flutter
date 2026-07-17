@@ -52,3 +52,7 @@
 ## 1.0.3
 
 * dependencies updated: google_mobile_ads and shared_preferences
+
+## 1.0.4
+
+* dependencies updated: google_mobile_ads
