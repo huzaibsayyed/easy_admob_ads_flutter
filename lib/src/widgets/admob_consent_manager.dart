@@ -24,34 +24,56 @@ class ConsentManager {
   }
 
   /// Helper method to call the Mobile Ads SDK to request consent information
-  /// and load/show a consent form if necessary.
-  void gatherConsent(OnConsentGatheringCompleteListener onConsentGatheringCompleteListener) {
+  /// and load/show a consent form if necessary. Returns when the process
+  /// completes (either successfully or with an error).
+  Future<void> gatherConsent() async {
     // For testing purposes, you can force a DebugGeography of Eea or NotEea.
     ConsentDebugSettings? debugSettings;
 
-    if (AdHelper.showConstentGDPR && kDebugMode) {
+    if (AdHelper.showConsentGDPR && kDebugMode) {
       debugSettings = ConsentDebugSettings(debugGeography: DebugGeography.debugGeographyEea);
     }
     ConsentRequestParameters params = ConsentRequestParameters(consentDebugSettings: debugSettings);
 
-    // Requesting an update to consent information should be called on every app launch.
-    ConsentInformation.instance.requestConsentInfoUpdate(
-      params,
-      () async {
-        ConsentForm.loadAndShowConsentFormIfRequired((loadAndShowError) {
-          // Consent has been gathered.
-          onConsentGatheringCompleteListener(loadAndShowError);
-        });
-      },
-      (FormError formError) {
-        onConsentGatheringCompleteListener(formError);
-      },
-    );
+    final completer = Completer<void>();
+
+    try {
+      ConsentInformation.instance.requestConsentInfoUpdate(
+        params,
+        () async {
+          // On success: attempt to load and show the consent form if required.
+          ConsentForm.loadAndShowConsentFormIfRequired((FormError? loadAndShowError) {
+            if (loadAndShowError != null) {
+              _logger.warning('Consent form load/show returned error: ${loadAndShowError.message}');
+            } else {
+              _logger.info('Consent form shown or not required.');
+            }
+            // Complete regardless of whether form was shown/required
+            if (!completer.isCompleted) completer.complete();
+          });
+        },
+        (FormError formError) {
+          _logger.warning('requestConsentInfoUpdate failed: ${formError.message}');
+          if (!completer.isCompleted) completer.complete();
+        },
+      );
+
+      return completer.future;
+    } catch (e) {
+      _logger.warning('Error while gathering consent: $e');
+      if (!completer.isCompleted) completer.complete();
+      return completer.future;
+    }
   }
 
   /// Helper method to call the Mobile Ads SDK method to show the privacy options form.
-  void showPrivacyOptionsForm(OnConsentFormDismissedListener onConsentFormDismissedListener) {
-    _logger.info('Showing Consent - AdHelper.showConstentGDPR = ${AdHelper.showConstentGDPR}');
-    ConsentForm.showPrivacyOptionsForm(onConsentFormDismissedListener);
+  Future<void> showPrivacyOptionsForm() async {
+    _logger.info('Showing Consent - AdHelper.showConsentGDPR = ${AdHelper.showConsentGDPR}');
+    final completer = Completer<void>();
+    ConsentForm.showPrivacyOptionsForm((FormError? error) {
+      if (error != null) _logger.warning('Privacy options form error: ${error.message}');
+      if (!completer.isCompleted) completer.complete();
+    });
+    return completer.future;
   }
 }

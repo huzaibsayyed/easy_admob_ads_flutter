@@ -21,8 +21,10 @@ class AdException implements Exception {
   static void _terminateApp(LoadAdError error, {String? adUnitId, String? adType}) {
     final adUnit = adUnitId ?? 'unknown';
 
-    _logger.severe(
-      [
+    final details = FlutterErrorDetails(
+      exception: FlutterError('❌ AdMob Format Mismatch for adUnit: $adUnit'),
+      library: 'easy_admob_ads_flutter',
+      summary: [
         '❌ AdMob Format Mismatch',
         '🔹 Ad Type: $adType',
         '🔹 Ad Unit: $adUnit',
@@ -36,7 +38,16 @@ class AdException implements Exception {
       ].join('\n'),
     );
 
-    Future.error(FlutterError("Admob Ad Error"));
+    // Report the error so it shows up in the Flutter error handling UI/console
+    FlutterError.reportError(details);
+
+    // In debug, throw to fail fast and help developers notice the misconfiguration.
+    if (kDebugMode) {
+      throw FlutterError('Admob Ad configuration error detected. See Flutter error details in the console.');
+    }
+
+    // In release, we log the details and continue running (don't crash user's app in production).
+    _logger.severe(details.summary);
   }
 
   static bool _isCriticalConfigError(LoadAdError error) {

@@ -9,4 +9,4 @@ class AdResult {
   String toString() => 'AdResult(wasShown: $wasShown, message: "$message", failReason: $failReason)';
 }
 
-enum AdFailReason { adsDisabled, cooldownPeriod, notLoaded, showError }
+enum AdFailReason { adsDisabled, cooldownPeriod, notLoaded, showError, firstEverOpen }

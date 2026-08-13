@@ -27,20 +27,11 @@ class AdmobService {
     }
 
     _logger.info('Starting AdmobService initialization...');
-    _logger.fine('AdHelper.showConstentGDPR = ${AdHelper.showConstentGDPR}');
+    _logger.fine('AdHelper.showConsentGDPR = ${AdHelper.showConsentGDPR}');
 
     // Step 1: Gather consent before initializing ads.
     _logger.info('Gathering user consent...');
-    final Completer<void> consentCompleter = Completer();
-    _consentManager.gatherConsent((FormError? error) {
-      if (error != null) {
-        _logger.severe('Error gathering consent: ${error.errorCode} - ${error.message}');
-      } else {
-        _logger.info('Consent successfully gathered.');
-      }
-      consentCompleter.complete();
-    });
-    await consentCompleter.future;
+    await _consentManager.gatherConsent();
 
     AdHelper.isPrivacyOptionsRequired = await _consentManager.isPrivacyOptionsRequired();
     _logger.fine('AdHelper.isPrivacyOptionsRequired = ${AdHelper.isPrivacyOptionsRequired}');

@@ -26,35 +26,19 @@ class AdIdRegistry {
     }
   }
 
-  /// Returns platform-specific ad IDs or throws if not initialized
+  /// Returns platform-specific ad IDs. If not initialized, returns an empty map instead of throwing.
   static Map<AdType, String> get currentPlatformAdIds {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        if (_iosAdIds != null) {
-          return _iosAdIds!;
-        }
-        break;
+        return _iosAdIds ?? <AdType, String>{};
 
       case TargetPlatform.android:
-        if (_androidAdIds != null) {
-          return _androidAdIds!;
-        }
-        break;
+        return _androidAdIds ?? <AdType, String>{};
 
       default:
         _logger.severe('Unsupported platform: $defaultTargetPlatform');
         throw UnsupportedError('Platform $defaultTargetPlatform is not supported.');
     }
-
-    _logger.severe(
-      'Ad IDs not initialized for $defaultTargetPlatform. '
-      'Call AdIdRegistry.initialize() with appropriate values.',
-    );
-
-    throw Exception(
-      'AdIdRegistry not initialized for platform: $defaultTargetPlatform. '
-      'Please call AdIdRegistry.initialize() with the required AdType map.',
-    );
   }
 
   /// Checks if Ad IDs are available for the current platform
