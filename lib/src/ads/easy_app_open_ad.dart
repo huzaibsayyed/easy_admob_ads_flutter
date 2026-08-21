@@ -48,13 +48,17 @@ class EasyAppOpenAd with AdRetryScheduler, AdCooldownTracker {
   // Retries right away once the device comes back online instead of waiting for the retry timer.
   void _onConnectivityChanged() {
     if (isDisposed) return;
-    if (EasyAdMobAds.instance.hasConnectivity && _ad == null && !_isLoadingAd) loadAd();
+    if (EasyAdMobAds.instance.hasConnectivity && _ad == null && !_isLoadingAd) {
+      loadAd();
+    }
   }
 
   // Loads right away once ads are turned back on, instead of staying unloaded until the next resume/retry.
   void _onAdsEnabledChanged() {
     if (isDisposed) return;
-    if (EasyAdMobAds.instance.adsEnabled && _ad == null && !_isLoadingAd) loadAd();
+    if (EasyAdMobAds.instance.adsEnabled && _ad == null && !_isLoadingAd) {
+      loadAd();
+    }
   }
 
   bool get _isExpired {

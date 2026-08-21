@@ -46,13 +46,17 @@ class EasyRewardedInterstitialAd with AdRetryScheduler, AdCooldownTracker {
   // Retries right away once the device comes back online instead of waiting for the retry timer.
   void _onConnectivityChanged() {
     if (isDisposed) return;
-    if (EasyAdMobAds.instance.hasConnectivity && _ad == null && _state != AdState.loading) loadAd();
+    if (EasyAdMobAds.instance.hasConnectivity && _ad == null && _state != AdState.loading) {
+      loadAd();
+    }
   }
 
   // Loads right away once ads are turned back on, instead of staying stuck in AdState.disabled.
   void _onAdsEnabledChanged() {
     if (isDisposed) return;
-    if (EasyAdMobAds.instance.adsEnabled && _ad == null && _state != AdState.loading) loadAd();
+    if (EasyAdMobAds.instance.adsEnabled && _ad == null && _state != AdState.loading) {
+      loadAd();
+    }
   }
 
   Future<void> loadAd() async {

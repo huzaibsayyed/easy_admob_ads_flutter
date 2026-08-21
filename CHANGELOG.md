@@ -1,61 +1,7 @@
-## 0.0.1
+## 2.0.1
 
-* Added: google_mobile_ads: ^6.0.0 and shared_preferences: ^2.5.3
-* Added ad formats: Banner, Interstitial, Rewarded, Rewarded Interstitial, App Open, Native
-
-## 0.0.2
-
-* Added: GDPR Consent
-
-## 0.0.3
-
-* Added Screenshots & Improved Example App UI
-
-## 0.0.4
-
-* Added Screenshots to README.md
-
-## 0.0.5
-
-* Files formatted
-
-## 0.0.6
-
-* Revemoved test id bug, Updated README.md and Consent Added with Global isPrivacyOptionRequired variable
-* Logger package added
-
-## 0.0.7
-
-* App Open Ad Issue fixed with real background time difference check
-
-## 0.0.8
-
-* Collapsible Feature Added in Banner Ad
-
-## 0.0.9
-
-* Added support for Immersive Mode on Android: Interstitial ads, Rewarded ads, Rewarded interstitial ads
-* AdState Fixed: Add disabled when showAds = false globally
-
-## 1.0.0
-
-* Updated GDPR Settings Button in Readme
-
-## 1.0.1
-
-* Removed the loading spinner for both banner and native ads
-
-## 1.0.2
-
-* dependencies updated: google_mobile_ads and shared_preferences
-
-## 1.0.3
-
-* dependencies updated: google_mobile_ads and shared_preferences
-
-## 1.0.4
-
-* dependencies updated: google_mobile_ads
+* Fixed static analysis lint issues.
+* Applied Dart formatting for improved pub.dev quality score.
 
 ## 2.0.0
 
@@ -67,3 +13,64 @@
 * Added internal retry/cooldown handling (`AdRetryScheduler`, `AdCooldownTracker`) for more resilient ad loading.
 * Added `connectivity_plus` dependency and now re-exports `logging` and `TrackingStatus` from `app_tracking_transparency`.
 * Migrated the example app's iOS project from CocoaPods to Swift Package Manager.
+
+## 1.0.4
+
+* Dependencies updated: `google_mobile_ads`
+
+## 1.0.3
+
+* Dependencies updated: `google_mobile_ads` and `shared_preferences`
+
+## 1.0.2
+
+* Dependencies updated: `google_mobile_ads` and `shared_preferences`
+
+## 1.0.1
+
+* Removed the loading spinner for both banner and native ads
+
+## 1.0.0
+
+* Updated GDPR Settings Button in README
+
+## 0.0.9
+
+* Added support for Immersive Mode on Android: Interstitial ads, Rewarded ads, Rewarded interstitial ads
+* Fixed `AdState`: Added disabled state when `showAds = false` globally
+
+## 0.0.8
+
+* Added Collapsible feature for Banner Ads
+
+## 0.0.7
+
+* Fixed App Open Ad issue with real background time difference check
+
+## 0.0.6
+
+* Removed test ID bug
+* Updated README.md
+* Added consent handling with global `isPrivacyOptionRequired` variable
+* Added `logging` package
+
+## 0.0.5
+
+* Files formatted
+
+## 0.0.4
+
+* Added screenshots to README.md
+
+## 0.0.3
+
+* Added screenshots and improved Example App UI
+
+## 0.0.2
+
+* Added GDPR Consent
+
+## 0.0.1
+
+* Added `google_mobile_ads: ^6.0.0` and `shared_preferences: ^2.5.3`
+* Added ad formats: Banner, Interstitial, Rewarded, Rewarded Interstitial, App Open, Native

@@ -138,7 +138,9 @@ class _EasyBannerAdState extends State<EasyBannerAd> {
   @override
   Widget build(BuildContext context) {
     if (!EasyAdMobAds.instance.adsEnabled) return const SizedBox.shrink();
-    if (!_isLoaded || _ad == null || _adSize == null) return const SizedBox.shrink();
+    if (!_isLoaded || _ad == null || _adSize == null) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       alignment: Alignment.center,

@@ -157,7 +157,9 @@ class _AdsDemoScreenState extends State<AdsDemoScreen> {
           const SizedBox(height: 8),
           ElevatedButton(
             onPressed: () => MobileAds.instance.openAdInspector((error) {
-              if (error != null) _showSnackBar('Ad Inspector closed with an error: ${error.message}');
+              if (error != null) {
+                _showSnackBar('Ad Inspector closed with an error: ${error.message}');
+              }
             }),
             child: const Text('Open Ad Inspector'),
           ),
@@ -173,7 +175,9 @@ class _AdsDemoScreenState extends State<AdsDemoScreen> {
                 }
                 ads.showPrivacyOptionsForm(
                   onDismissed: (error) {
-                    if (error != null) _showSnackBar('${error.errorCode}: ${error.message}');
+                    if (error != null) {
+                      _showSnackBar('${error.errorCode}: ${error.message}');
+                    }
                   },
                 );
               },

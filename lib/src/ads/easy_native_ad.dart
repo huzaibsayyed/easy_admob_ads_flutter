@@ -160,7 +160,9 @@ class _EasyNativeAdState extends State<EasyNativeAd> {
   @override
   Widget build(BuildContext context) {
     if (!EasyAdMobAds.instance.adsEnabled) return const SizedBox.shrink();
-    if (_state != AdState.loaded || !_isLoaded || _ad == null) return const SizedBox.shrink();
+    if (_state != AdState.loaded || !_isLoaded || _ad == null) {
+      return const SizedBox.shrink();
+    }
 
     return SizedBox(
       height: widget.height,
