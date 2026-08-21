@@ -56,3 +56,14 @@
 ## 1.0.4
 
 * dependencies updated: google_mobile_ads
+
+## 2.0.0
+
+* **Breaking:** Rewritten package architecture. `EasyAdMobAds` is now the single entry point/facade, replacing `AdmobService`, `AdHelper`, and `AdIdRegistry`.
+* **Breaking:** `AdmobConfig` replaced by `EasyAdsConfig`.
+* **Breaking:** Ad widgets renamed for consistency: `AdmobBannerAd` → `EasyBannerAd`, `AdmobInterstitial` → `EasyInterstitialAd`, `AdmobRewardedAd` → `EasyRewardedAd`, `AdmobRewardedInterstitialAd` → `EasyRewardedInterstitialAd`, `AdmobNativeAd` → `EasyNativeAd`, `AdmobAppOpenAd` → `EasyAppOpenAd`.
+* **Breaking:** `AdmobConsentManager` replaced by `EasyConsentManager`; App Tracking Transparency handling split out into a new `EasyAttManager`.
+* Added `AdConfigDiagnostics` to help validate ad unit/config setup.
+* Added internal retry/cooldown handling (`AdRetryScheduler`, `AdCooldownTracker`) for more resilient ad loading.
+* Added `connectivity_plus` dependency and now re-exports `logging` and `TrackingStatus` from `app_tracking_transparency`.
+* Migrated the example app's iOS project from CocoaPods to Swift Package Manager.

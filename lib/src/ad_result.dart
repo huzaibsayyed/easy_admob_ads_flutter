@@ -1,3 +1,4 @@
+/// The outcome of a call to `showAd()` on any full-screen ad controller.
 class AdResult {
   final bool wasShown;
   final String message;
@@ -9,4 +10,5 @@ class AdResult {
   String toString() => 'AdResult(wasShown: $wasShown, message: "$message", failReason: $failReason)';
 }
 
-enum AdFailReason { adsDisabled, cooldownPeriod, notLoaded, showError }
+/// Why an ad was not shown when `showAd()` was called.
+enum AdFailReason { adsDisabled, cooldownPeriod, notLoaded, showError, firstTimeUser }

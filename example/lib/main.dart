@@ -1,176 +1,107 @@
 import 'package:easy_admob_ads_flutter/easy_admob_ads_flutter.dart';
+
 import 'package:flutter/material.dart';
 
-void main() async {
-  // Ensure platform bindings are initialized before any async calls
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set your actual AdMob App IDs in AndroidManifest.xml and Info.plist:
-  // Android: https://developers.google.com/admob/flutter/quick-start#android
-  // iOS:    https://developers.google.com/admob/flutter/quick-start#ios
+  // Prints package logs to the console during development. Log levels: FINEST < FINER < FINE < CONFIG < INFO < WARNING < SEVERE < SHOUT
+  hierarchicalLoggingEnabled = true; // lets individual loggers override root's level
+  Logger.root.level = Level.ALL; // default for everything else
+  for (final name in [
+    'AdConfigDiagnostics',
+    'AppLifecycleReactor',
+    'EasyAdMobAds',
+    'EasyAppOpenAd',
+    'EasyBannerAd',
+    'EasyInterstitialAd',
+    'EasyNativeAd',
+    'EasyRewardedAd',
+    'EasyRewardedInterstitialAd',
+    'EasyConsentManager',
+    'EasyAttManager',
+  ]) {
+    Logger(name).level = Level.WARNING; // verbose only for these
+  }
+  Logger.root.onRecord.listen((record) => debugPrint('[${record.level.name}] ${record.loggerName}: ${record.message}'));
 
-  // Sets up global logging for Easy Admob Ads Flutter Package
-  AdHelper.setupAdLogging();
-
-  // Set platform-specific test device IDs to ensure test ads are shown during development.
-  AdHelper.testDeviceIds = ['kGADSimulatorID', 'YOUR_ANDROID_TEST_DEVICE_ID'];
-
-  // Initialize ad unit IDs for Android and/or iOS (required for at least one)
-  // Leave any value as an empty string ("") to skip that ad type.
-  AdIdRegistry.initialize(
-    ios: {
-      AdType.banner: 'ca-app-pub-3940256099942544/8388050270', // Test ID
-      AdType.interstitial: 'ca-app-pub-3940256099942544/4411468910', // Test ID
-      AdType.rewarded: 'ca-app-pub-3940256099942544/1712485313', // Test ID
-      AdType.rewardedInterstitial: 'ca-app-pub-3940256099942544/6978759866', // Test ID
-      AdType.appOpen: 'ca-app-pub-3940256099942544/5575463023', // Test ID
-      AdType.native: 'ca-app-pub-3940256099942544/3986624511', // Test ID
-    },
-    android: {
-      AdType.banner: 'ca-app-pub-3940256099942544/2014213617', // Test ID
-      AdType.interstitial: 'ca-app-pub-3940256099942544/1033173712', // Test ID
-      AdType.rewarded: 'ca-app-pub-3940256099942544/5224354917', // Test ID
-      AdType.rewardedInterstitial: 'ca-app-pub-3940256099942544/5354046379', // Test ID
-      AdType.appOpen: 'ca-app-pub-3940256099942544/3419835294', // Test ID
-      AdType.native: 'ca-app-pub-3940256099942544/2247696110', // Test ID
-    },
+  // Set your real ad unit IDs here before release. Any type left out falls
+  // back to a Google test ad unit ID automatically.
+  await EasyAdMobAds.instance.initialize(
+    config: const EasyAdsConfig(
+      androidAdUnitIds: kTestAdUnitIdsAndroid, // TODO: replace with your Android ad unit IDs
+      iosAdUnitIds: kTestAdUnitIdsIOS, // TODO: replace with your iOS ad unit IDs
+      testDeviceIds: ['kGADSimulatorID'],
+      simulateEeaConsentInDebug: true, // set true to preview the GDPR consent form in debug
+    ),
   );
 
-  // Global Ad Configuration
-  AdHelper.showAds = true; // Set to false to disable all ads globally
-  // AdHelper.showAppOpenAds = false; // Set to false to disable App Open Ad on startup
-
-  // AdHelper.showConstentGDPR = true; // Simulate GDPR consent (debug only, false in release)
-
-  // Initialize Google Mobile Ads SDK
-  await AdmobService().initialize();
-
-  // Optional: Use during development to test if all ad units load successfully
-  // await AdRealIdValidation.validateAdUnits();
-
-  runApp(const MainApp());
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: const AdsDemo());
+    return MaterialApp(title: 'Easy AdMob Ads Demo', home: const AdsDemoScreen());
   }
 }
 
-class AdsDemo extends StatefulWidget {
-  const AdsDemo({super.key});
+class AdsDemoScreen extends StatefulWidget {
+  const AdsDemoScreen({super.key});
+
   @override
-  State<AdsDemo> createState() => _AdsDemoState();
+  State<AdsDemoScreen> createState() => _AdsDemoScreenState();
 }
 
-class _AdsDemoState extends State<AdsDemo> {
-  late AdmobInterstitialAd _interstitialAd;
-  late AdmobRewardedAd _rewardedAd;
-  late AdmobRewardedInterstitialAd _rewardedInterstitialAd;
+class _AdsDemoScreenState extends State<AdsDemoScreen> {
+  int _rewardCount = 0;
+  late final EasyInterstitialAd _interstitialAd;
+  late final EasyRewardedAd _rewardedAd;
+  late final EasyRewardedInterstitialAd _rewardedInterstitialAd;
+
+  AdState _interstitialState = AdState.initial;
+  AdState _rewardedState = AdState.initial;
+  AdState _rewardedInterstitialState = AdState.initial;
 
   @override
   void initState() {
     super.initState();
-    _loadAllAds();
-  }
 
-  final _consentManager = ConsentManager();
-
-  Future<void> _loadAllAds() async {
-    // Interstitial
-    _interstitialAd = AdmobInterstitialAd(
-      minTimeBetweenAds: Duration(seconds: 20),
-      onAdStateChanged: (state) {
-        debugPrint('Interstitial ad state: $state');
+    _interstitialAd = EasyInterstitialAd(
+      onStateChanged: (state) {
+        if (mounted) {
+          setState(() => _interstitialState = state);
+        }
       },
-    );
-    _interstitialAd.loadAd();
+    )..loadAd();
 
-    // Rewarded
-    _rewardedAd = AdmobRewardedAd(
-      onAdStateChanged: (state) {
-        debugPrint('Rewarded ad state: $state');
+    _rewardedAd = EasyRewardedAd(
+      onStateChanged: (state) {
+        setState(() => _rewardedState = state);
       },
       onRewardEarned: (reward) {
-        // _unlockLevel();
-        debugPrint('You earned ${reward.amount} coins!');
-      },
-    );
-    _rewardedAd.loadAd();
-
-    // Rewarded Interstitial
-    _rewardedInterstitialAd = AdmobRewardedInterstitialAd(
-      onAdStateChanged: (state) {
         setState(() {
-          switch (state) {
-            case AdState.initial:
-              // Initial state before any action
-              break;
-            case AdState.loading:
-              // Ad is loading
-              break;
-            case AdState.loaded:
-              // Ad loaded successfully and ready to show
-              break;
-            case AdState.error:
-              // Error occurred during loading/showing
-              break;
-            case AdState.closed:
-              // Ad was closed by the user
-              break;
-            case AdState.disabled:
-              // Ad was disabled by showAd = false
-              break;
-          }
+          _rewardCount++;
         });
+
+        _showSnackBar('You earned ${reward.amount} ${reward.type}!');
+      },
+    )..loadAd();
+
+    _rewardedInterstitialAd = EasyRewardedInterstitialAd(
+      onStateChanged: (state) {
+        setState(() => _rewardedInterstitialState = state);
       },
       onRewardEarned: (reward) {
-        // Show a confirmation to the user
-        debugPrint('You earned ${reward.amount} coins!');
+        setState(() {
+          _rewardCount++;
+        });
+
+        _showSnackBar('You earned ${reward.amount} ${reward.type}!');
       },
-    );
-    _rewardedInterstitialAd.loadAd();
-  }
-
-  void _showInterstitialAd() async {
-    final result = await _interstitialAd.showAd();
-
-    if (!result.wasShown && mounted) {
-      // You can provide specific messages or actions based on the fail reason
-      switch (result.failReason) {
-        case AdFailReason.adsDisabled:
-          // Perhaps offer to enable ads for rewards
-          break;
-        case AdFailReason.cooldownPeriod:
-          // Show countdown timer until next available ad
-          break;
-        case AdFailReason.notLoaded:
-          // Show loading indicator and retry loading
-          _rewardedAd.loadAd();
-          break;
-        case AdFailReason.showError:
-          // Log the error or report to analytics
-          break;
-        case null:
-          // Should not happen for failed ads
-          break;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
-    }
-  }
-
-  final _appOpenAdManager = AdmobAppOpenAd();
-  void _showAppOpenAd() async {
-    AdHelper.showAppOpenAds = true;
-    final result = await _appOpenAdManager.showAdIfAvailable();
-
-    if (!result.wasShown) {
-      debugPrint("App Open Ad could not be shown: ${result.message}");
-    }
+    )..loadAd();
   }
 
   @override
@@ -181,80 +112,132 @@ class _AdsDemoState extends State<AdsDemo> {
     super.dispose();
   }
 
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _showResult(Future<AdResult> Function() show) async {
+    final result = await show();
+    _showSnackBar(result.message);
+  }
+
+  Future<void> _showInterstitialAndNavigate() async {
+    final AdResult result = await _interstitialAd.showAd();
+
+    _showSnackBar(result.message);
+
+    if (!mounted) return;
+
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NextScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
-    bool showAds = AdHelper.showAds;
+    final ads = EasyAdMobAds.instance;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('AdMob All Ads Demo')),
-      bottomNavigationBar: AdmobBannerAd(collapsible: true, height: 100),
-      body: SingleChildScrollView(
-        child: Column(
+      appBar: AppBar(title: const Text('Easy AdMob Ads Demo')),
+      bottomNavigationBar: const EasyBannerAd(collapsible: true),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          SwitchListTile(title: const Text('Ads enabled'), subtitle: const Text('Turn all ads on/off at runtime'), value: ads.adsEnabled, onChanged: (value) => setState(() => ads.adsEnabled = value)),
+          const SizedBox(height: 8),
+          EasyNativeAd.small(),
+          const SizedBox(height: 16),
+          _AdButton(label: 'Show Interstitial', state: _interstitialState, onPressed: _showInterstitialAndNavigate),
+          _AdButton(label: 'Show Rewarded ($_rewardCount)', state: _rewardedState, onPressed: () => _showResult(_rewardedAd.showAd)),
+          _AdButton(label: 'Show Rewarded Interstitial ($_rewardCount)', state: _rewardedInterstitialState, onPressed: () => _showResult(_rewardedInterstitialAd.showAd)),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () => _showResult(() => ads.appOpenAd?.showAdIfAvailable() ?? Future.value(const AdResult(wasShown: false, message: 'App Open ad was not preloaded'))),
+            child: const Text('Show App Open Ad'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () => MobileAds.instance.openAdInspector((error) {
+              if (error != null) _showSnackBar('Ad Inspector closed with an error: ${error.message}');
+            }),
+            child: const Text('Open Ad Inspector'),
+          ),
+          if (ads.isPrivacyOptionsRequired) ...[
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                if (!ads.isPrivacyOptionsRequired) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No privacy settings are available for your region.')));
+                  }
+                  return;
+                }
+                ads.showPrivacyOptionsForm(
+                  onDismissed: (error) {
+                    if (error != null) _showSnackBar('${error.errorCode}: ${error.message}');
+                  },
+                );
+              },
+              child: const Text('Privacy Options (GDPR)'),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            "Is FirstTime User: ${ads.isFirstTimeUser ? 'Yes' : 'No'}, Connectivity: ${ads.hasConnectivity ? 'Online' : 'Offline'}",
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 4),
+          Text('App Tracking Transparency: ${ads.trackingAuthorizationStatus.name}', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdButton extends StatelessWidget {
+  final String label;
+  final AdState state;
+  final VoidCallback onPressed;
+
+  const _AdButton({required this.label, required this.state, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            AdmobNativeAd.small(),
-            Text("Check the console logs", style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: () {
-                _showInterstitialAd();
-              },
-              child: const Text('Show Interstitial'),
-            ),
-            SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: () {
-                _rewardedAd.showAd();
-              },
-              child: const Text('Show Rewarded'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _rewardedInterstitialAd.showAd();
-              },
-              child: const Text('Show Rewarded Interstitial'),
-            ),
-            SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: () {
-                _showAppOpenAd();
-              },
-              child: const Text('Manual Show App Open Ad'),
-            ),
-            SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  showAds = !showAds;
-                  AdHelper.showAds = showAds;
-                });
-              },
-              child: Text(showAds ? 'Stop showing ads' : 'Start showing ads'),
-            ),
-            SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: () {
-                MobileAds.instance.openAdInspector((error) {
-                  // Error will be non-null if ad inspector closed due to an error.
-                });
-              },
-              child: Text("Ad Inspector"),
-            ),
-            if (AdHelper.isPrivacyOptionsRequired) ...[
-              SizedBox(height: 15),
-              ElevatedButton(
-                onPressed: () {
-                  _consentManager.showPrivacyOptionsForm((formError) {
-                    if (formError != null) {
-                      debugPrint("${formError.errorCode}: ${formError.message}");
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("The privacy options form is unavailable because it is not required.")));
-                      }
-                    }
-                  });
-                },
-                child: Text("Show GDPR Ad Privacy"),
-              ),
-            ],
+            Text(label),
+            const SizedBox(width: 8),
+            Text('(${state.name})', style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NextScreen extends StatelessWidget {
+  const NextScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Next Screen')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.check_circle_outline, size: 64),
+            const SizedBox(height: 16),
+            Text('Welcome to the Next Screen', style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            Text('The interstitial ad was completed or was not available.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 24),
+            ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Go Back')),
           ],
         ),
       ),

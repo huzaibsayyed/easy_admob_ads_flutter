@@ -9,6 +9,8 @@
 [![Code Size](https://img.shields.io/github/languages/code-size/huzaibsayyed/easy_admob_ads_flutter?logo=github\&logoColor=white)](https://github.com/huzaibsayyed/easy_admob_ads_flutter)
 [![License](https://img.shields.io/github/license/huzaibsayyed/easy_admob_ads_flutter?logo=open-source-initiative\&logoColor=green)](https://github.com/huzaibsayyed/easy_admob_ads_flutter/blob/main/LICENSE)
 
+A simple, configurable Flutter wrapper for Google AdMob. One EasyAdMobAds.instance sets up the SDK, GDPR/UMP consent, and a global on/off switch for ads. All six ad formats are supported with their own controller or widget.
+
 **Show some ❤️ by giving the [repo](https://github.com/huzaibsayyed/easy_admob_ads_flutter) a ⭐ and liking 👍 the package on [pub.dev](https://pub.dev/packages/easy_admob_ads_flutter)!**
 
 ## Screenshots
@@ -20,45 +22,30 @@
 
 ## Features
 
-This package simplifies integrating multiple AdMob ad formats in your Flutter apps, including:
-
-* Banner
+* Banner (adaptive, optionally collapsible)
 * Interstitial
 * Rewarded
 * Rewarded Interstitial
-* App Open Ads
-* Native Ads
+* App Open (auto-preloaded and shown on app resume)
+* Native (small/medium templates)
+* GDPR/UMP consent flow, including the "privacy options" re-consent form
+* App Tracking Transparency (ATT) consent on iOS 14.5+, requested automatically during `initialize()`
+* Network connectivity awareness — ad requests pause while offline and resume as soon as connectivity returns
 
-Also includes built-in support for GDPR consent using Google's User Messaging Platform (UMP), ensuring compliance in GDPR-affected regions.
+## Getting started
 
-## Getting Started
-
-To get started with `easy_admob_ads_flutter`, follow the steps below to integrate AdMob ads into your Flutter app.
-
-
-### 1. Install the package
-
-Add the dependency in your `pubspec.yaml`:
+### 1. Install
 
 ```yaml
 dependencies:
   easy_admob_ads_flutter: ^<latest_version>
 ```
 
-> Replace `<latest_version>` with the latest version on [pub.dev](https://pub.dev/packages/easy_admob_ads_flutter)
+### 2. Platform setup
 
-**OR** install it directly via terminal:
+Add your AdMob App ID:
 
-```bash
-flutter pub add easy_admob_ads_flutter
-```
-
-### 2. Configure platform-specific AdMob setup
-
-#### Android
-
-* Open your `android/app/src/main/AndroidManifest.xml`
-* Add your AdMob App ID inside the `<application>` tag:
+**Android** — `android/app/src/main/AndroidManifest.xml`:
 
 ```xml
 <meta-data
@@ -66,155 +53,83 @@ flutter pub add easy_admob_ads_flutter
   android:value="ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy"/>
 ```
 
-#### iOS
-
-* Open your `ios/Runner/Info.plist` and add:
+**iOS** — `ios/Runner/Info.plist`:
 
 ```xml
 <key>GADApplicationIdentifier</key>
 <string>ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy</string>
 ```
 
-### 3. Initialize the SDK and pass your Ad Unit IDs
-
-Inside your `main.dart`:
+### 3. Initialize
 
 ```dart
 void main() async {
-  // Ensure platform bindings are initialized before any async calls
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set your actual AdMob App IDs in AndroidManifest.xml and Info.plist:
-  // Android: https://developers.google.com/admob/flutter/quick-start#android
-  // iOS:    https://developers.google.com/admob/flutter/quick-start#ios
-
-  // Sets up global logging for Easy Admob Ads Flutter Package
-  AdHelper.setupAdLogging();
-
-  // Initialize ad unit IDs for Android and/or iOS (required for at least one)
-  // Leave any value as an empty string ("") to skip that ad type.
-  AdIdRegistry.initialize(
-    ios: {
-      AdType.banner: 'ca-app-pub-3940256099942544/8388050270', // Test ID
-      AdType.interstitial: 'ca-app-pub-3940256099942544/4411468910', // Test ID
-      AdType.rewarded: 'ca-app-pub-3940256099942544/1712485313', // Test ID
-      AdType.rewardedInterstitial: 'ca-app-pub-3940256099942544/6978759866', // Test ID
-      AdType.appOpen: 'ca-app-pub-3940256099942544/5575463023', // Test ID
-      AdType.native: 'ca-app-pub-3940256099942544/3986624511', // Test ID
-    },
-    android: {
-      AdType.banner: 'ca-app-pub-3940256099942544/2014213617', // Test ID
-      AdType.interstitial: 'ca-app-pub-3940256099942544/1033173712', // Test ID
-      AdType.rewarded: 'ca-app-pub-3940256099942544/5224354917', // Test ID
-      AdType.rewardedInterstitial: 'ca-app-pub-3940256099942544/5354046379', // Test ID
-      AdType.appOpen: 'ca-app-pub-3940256099942544/3419835294', // Test ID
-      AdType.native: 'ca-app-pub-3940256099942544/2247696110', // Test ID
-    },
+  await EasyAdMobAds.instance.initialize(
+    config: const EasyAdsConfig(
+      androidAdUnitIds: {
+        AdType.banner: 'ca-app-pub-.../...',
+        AdType.interstitial: 'ca-app-pub-.../...',
+      },
+      iosAdUnitIds: {
+        AdType.banner: 'ca-app-pub-.../...',
+        AdType.interstitial: 'ca-app-pub-.../...',
+      },
+      testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+    ),
   );
 
-  // Global Ad Configuration
-  AdHelper.showAds = true; // Set to false to disable all ads globally
-  // AdHelper.showAppOpenAds = true; // Set to false to disable App Open Ad on startup
-
-  // AdHelper.showConstentGDPR = true; // Simulate GDPR consent (debug only, false in release)
-
-  // Initialize Google Mobile Ads SDK
-  await AdmobService().initialize();
-
-  // Optional: Use during development to test if all ad units load successfully
-  // await AdRealIdValidation.validateAdUnits();
-
-  runApp(const MainApp());
+  runApp(const MyApp());
 }
 ```
 
-See the full example in the [`example/`](https://github.com/huzaibsayyed/easy_admob_ads_flutter/blob/main/example/lib/main.dart) folder of this repository for complete usage of all ad types with interactive UI.
+Any `AdType` you don't configure automatically falls back to a Google test ad unit ID
+(with a warning logged), so the package works out of the box during development.
 
 ## Usage
 
-After initializing AdMob and registering your ad unit IDs, you can use the following widgets and classes to display ads:
-
-### Banner Ad
-
 ```dart
-AdmobBannerAd(collapsible: true, height: 100)
+// Banner
+const EasyBannerAd(collapsible: true, height: 100)
+
+// Native
+EasyNativeAd.medium()
+
+// Interstitial
+final interstitialAd = EasyInterstitialAd()..loadAd();
+await interstitialAd.showAd();
+
+// Rewarded
+final rewardedAd = EasyRewardedAd(onRewardEarned: (reward) {
+  // grant the reward
+})..loadAd();
+await rewardedAd.showAd();
+
+// Rewarded Interstitial
+final rewardedInterstitialAd = EasyRewardedInterstitialAd(onRewardEarned: (reward) {
+  // grant the reward
+})..loadAd();
+await rewardedInterstitialAd.showAd();
+
+// App Open — preloaded automatically; show it manually if you want:
+await EasyAdMobAds.instance.appOpenAd?.showAdIfAvailable();
+
+// Turn all ads on/off (e.g. after a "remove ads" purchase)
+EasyAdMobAds.instance.adsEnabled = false;
+
+// GDPR privacy options
+if (EasyAdMobAds.instance.isPrivacyOptionsRequired) {
+  EasyAdMobAds.instance.showPrivacyOptionsForm();
+}
 ```
 
-### Native Ad
-
-```dart
-AdmobNativeAd.medium()
-```
-
-### Interstitial Ad
-
-```dart
-final interstitialAd = AdmobInterstitialAd();
-interstitialAd.loadAd();
-interstitialAd.showAd();
-```
-
-### Rewarded Ad
-
-```dart
-final rewardedAd = AdmobRewardedAd(
-  onRewardEarned: (reward) {
-    // Grant the user a reward
-  },
-);
-rewardedAd.loadAd();
-rewardedAd.showAd();
-```
-
-### Rewarded Interstitial Ad
-
-```dart
-final rewardedInterstitialAd = AdmobRewardedInterstitialAd(
-  onRewardEarned: (reward) {
-    // Grant reward here
-  },
-);
-rewardedInterstitialAd.loadAd();
-rewardedInterstitialAd.showAd();
-```
-
-### App Open Ad
-
-```dart
-final appOpenAd = AdmobAppOpenAd();
-appOpenAd.loadAd();
-appOpenAd.showAdIfAvailable();
-```
-
-You can also control when App Open ads show automatically using: `AdHelper.showAppOpenAds = true;`
-
-### GDPR Consent (UMP)
-
-```dart
-final consentManager = ConsentManager();
-
-if (AdHelper.isPrivacyOptionsRequired) ...[
-ElevatedButton(
-  onPressed: () {
-    consentManager.showPrivacyOptionsForm((formError) {
-      if (formError != null) {
-        debugPrint("${formError.errorCode}: ${formError.message}");
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("The privacy options form is unavailable because it is not required.")));
-        }
-      }
-    });
-  },
-  child: Text("Show GDPR Ad Privacy"),
-),
-```
-
-This ensures GDPR compliance using Google’s User Messaging Platform (UMP). Use `AdHelper.showConstentGDPR = true` in debug builds to simulate consent for testing.
+See the [`example/`](example/lib/main.dart) app for a full demo screen with all ad types,
+the on/off switch, and the consent button wired up.
 
 ## Author
 
 ##### Huzaib Sayyed
 
 [![GitHub](https://img.shields.io/badge/GitHub-%23121011.svg?logo=github&logoColor=white)](https://github.com/huzaibsayyed) [![LinkedIn](https://custom-icon-badges.demolab.com/badge/LinkedIn-0A66C2?logo=linkedin-white&logoColor=fff)](https://www.linkedin.com/in/huzaif7)
-[![Visit StudyGyaan](https://img.shields.io/badge/Visit-StudyGyaan-brightgreen?style=flat)](https://studygyaan.com)
 
